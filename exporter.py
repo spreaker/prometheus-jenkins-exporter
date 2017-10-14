@@ -6,9 +6,10 @@ import os
 from urllib.parse import urlencode, quote_plus
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY
+import logging
+from pythonjsonlogger import jsonlogger
 
 
-# TODO json logger
 # TODO handle SIGTERM
 
 
@@ -16,6 +17,7 @@ class JenkinsApiClient():
     def __init__(self, config):
         self.config = config
         self.client = Http(cache=None, timeout=5)
+        self.logger = logging.getLogger()
 
         # Generate auth digest
         if self.config["username"] != "":
@@ -26,7 +28,7 @@ class JenkinsApiClient():
     def request(self, path, params = {}):
         # Encode query string
         query   = urlencode(params, quote_via=quote_plus)
-        url     = self.config["url"] + path + "/api/json?" + query
+        url     = self.config["url"] + path + "/api/json" + ("?" + query if query != "" else "")
 
         # Prepare request headers
         headers = {}
@@ -34,26 +36,22 @@ class JenkinsApiClient():
             headers["Authorization"] = "Basic {:s}".format(self.auth)
 
         try:
-            # TODO log
-            print("Sending GET request to " + url)
+            self.logger.debug("Sending GET request to {:s}".format(url))
             response, content = self.client.request(url, "GET", headers=headers)
         except Exception as error:
-            # TODO log
-            print(error)
+            self.logger.debug("Unable to fetch metrics from {:s} because of error: {:s}".format(url, str(error)))
             return False
 
         # Check response code
         if response.status != 200:
-            # TODO log
-            print("response status: " + response.status)
+            self.logger.debug("Unable to fetch metrics from {:s} because response status code is {:d}".format(url, response.status))
             return False
 
         # Decode json
         try:
             data = json.loads(content)
         except Exception as error:
-            # TODO log
-            print(error)
+            self.logger.warning("Unable to fetch metrics from {:s} because error while decoding json: {:s}".format(url, str(error)))
             return False
 
         return { "data": data, "jenkins_version": response["x-jenkins"] }
@@ -146,11 +144,21 @@ if __name__ == '__main__':
         "exporter_port":  os.environ["EXPORTER_PORT"] if "EXPORTER_PORT" in os.environ else 8000
     }
 
+    # Init logger
+    logHandler = logging.StreamHandler()
+    formatter  = jsonlogger.JsonFormatter()
+    logHandler.setFormatter(formatter)
+    logging.getLogger().addHandler(logHandler)
+    # TODO configurabile da fuori
+    logging.getLogger().setLevel(logging.DEBUG)
+
     # Register our custom collector
+    logging.getLogger().info("Exporter is starting up")
     REGISTRY.register(JenkinsMetricsCollector(config))
 
     # Start server
     start_http_server(config["exporter_port"])
+    logging.getLogger().info("Exporter listening on port {:d}".format(config["exporter_port"]))
 
     while True:
         time.sleep(60)
