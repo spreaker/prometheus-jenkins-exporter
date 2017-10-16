@@ -25,10 +25,10 @@ class JenkinsApiClient():
         else:
             self.auth = ""
 
-    def request(self, path, params = {}):
+    def request(self, path, params={}):
         # Encode query string
-        query   = urlencode(params, quote_via=quote_plus)
-        url     = self.config["url"] + path + "/api/json" + ("?" + query if query != "" else "")
+        query = urlencode(params, quote_via=quote_plus)
+        url = self.config["url"] + path + "/api/json" + ("?" + query if query != "" else "")
 
         # Prepare request headers
         headers = {}
@@ -39,10 +39,10 @@ class JenkinsApiClient():
             self.logger.debug("Fetching metrics from {:s}".format(url))
             response, content = self.client.request(url, "GET", headers=headers)
         except Exception as error:
-            self.logger.debug("Unable to fetch metrics from {:s}".format(url), extra={ "exception": str(error) })
+            self.logger.debug("Unable to fetch metrics from {:s}".format(url), extra={"exception": str(error)})
             return False
 
-        # Check response code
+        # Check response code
         if response.status != 200:
             self.logger.debug("Unable to fetch metrics from {:s} because response status code is {:d}".format(url, response.status))
             return False
@@ -51,12 +51,10 @@ class JenkinsApiClient():
         try:
             data = json.loads(content)
         except Exception as error:
-            self.logger.warning("Unable to decode metrics from {:s}".format(url), extra={ "exception": str(error) })
+            self.logger.warning("Unable to decode metrics from {:s}".format(url), extra={"exception": str(error)})
             return False
 
-        return { "data": data, "jenkins_version": response["x-jenkins"] }
-
-
+        return {"data": data, "jenkins_version": response["x-jenkins"]}
 
 
 class JenkinsMetricsCollector():
@@ -68,11 +66,11 @@ class JenkinsMetricsCollector():
         metrics = self.get_jenkins_metrics()
 
         for name, metric in metrics.items():
-            value  = metric["value"]
+            value = metric["value"]
             labels = metric["labels"] if "labels" in metric else {}
 
             gauge = GaugeMetricFamily(name, "", labels=labels.keys())
-            gauge.add_metric(value=value,labels=labels.values())
+            gauge.add_metric(value=value, labels=labels.values())
             yield gauge
 
     def get_jenkins_metrics(self):
@@ -81,7 +79,7 @@ class JenkinsMetricsCollector():
         metrics.update(self.get_jenkins_queue_metrics())
         metrics.update(self.get_jenkins_plugins_metrics())
 
-        # Add prefix to all metrics
+        # Add prefix to all metrics
         renamed = {}
 
         for key, value in metrics.items():
@@ -90,49 +88,47 @@ class JenkinsMetricsCollector():
         return renamed
 
     def get_jenkins_status_metrics(self):
-        # Fetch data from API
+        # Fetch data from API
         response = self.client.request("/queue")
 
-        if response != False:
-            return { "up": { "value": 1, "labels": { "version": response["jenkins_version"]} } }
+        if response is not False:
+            return {"up": {"value": 1, "labels": {"version": response["jenkins_version"]}}}
         else:
-            return { "up": { "value": 0, "labels": { "version": "" } } }
+            return {"up": {"value": 0, "labels": {"version": ""}}}
 
     def get_jenkins_queue_metrics(self):
-        # Fetch data from API
+        # Fetch data from API
         response = self.client.request("/queue")
-        if response == False:
+        if response is False:
             return {}
 
-        metrics = { "queue_oldest_job_since_seconds": { "value": 0 } }
+        metrics = {"queue_oldest_job_since_seconds": {"value": 0}}
 
         # Get the oldest job in queue
         if len(response["data"]["items"]) > 0:
-            oldest = min([item["inQueueSince"] for item in response["data"]["items"]], default = 0)
+            oldest = min([item["inQueueSince"] for item in response["data"]["items"]], default=0)
             if oldest > 0:
-                metrics["queue_oldest_job_since_seconds"]["value"] = time.time() - (oldest / 1000);
+                metrics["queue_oldest_job_since_seconds"]["value"] = time.time() - (oldest / 1000)
 
         return metrics
 
     def get_jenkins_plugins_metrics(self):
-        # Fetch data from API
-        response = self.client.request("/pluginManager", { "tree": "plugins[shortName,version,enabled,hasUpdate]" })
-        if response == False:
+        # Fetch data from API
+        response = self.client.request("/pluginManager", {"tree": "plugins[shortName,version,enabled,hasUpdate]"})
+        if response is False:
             return {}
 
         metrics = {
-            "plugins_enabled_count":             { "value": 0 },
-            "plugins_enabled_with_update_count": { "value": 0 }
+            "plugins_enabled_count":             {"value": 0},
+            "plugins_enabled_with_update_count": {"value": 0}
         }
 
         # Count metrics
         for plugin in response["data"]["plugins"]:
-            metrics["plugins_enabled_count"]["value"]             += 1 if plugin["enabled"] else 0
+            metrics["plugins_enabled_count"]["value"] += 1 if plugin["enabled"] else 0
             metrics["plugins_enabled_with_update_count"]["value"] += 1 if plugin["enabled"] and plugin["hasUpdate"] else 0
 
         return metrics
-
-
 
 
 if __name__ == '__main__':
@@ -144,9 +140,9 @@ if __name__ == '__main__':
         "exporter_port":  os.environ["EXPORTER_PORT"] if "EXPORTER_PORT" in os.environ else 8000
     }
 
-    # Init logger
+    # Init logger
     logHandler = logging.StreamHandler()
-    formatter  = jsonlogger.JsonFormatter()
+    formatter = jsonlogger.JsonFormatter()
     logHandler.setFormatter(formatter)
     logging.getLogger().addHandler(logHandler)
     # TODO add timestamp and level to logger output

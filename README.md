@@ -30,6 +30,13 @@ jenkins_plugins_enabled_with_update_count
 ```
 
 
+## Contributions
+
+### Ensure the code is PEP 8 compliant
+
+`pycodestyle --max-line-length=180 exporter.py`
+
+
 ## License
 
 This software is released under the [MIT license](LICENSE.md).
