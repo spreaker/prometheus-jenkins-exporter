@@ -36,10 +36,10 @@ class JenkinsApiClient():
             headers["Authorization"] = "Basic {:s}".format(self.auth)
 
         try:
-            self.logger.debug("Sending GET request to {:s}".format(url))
+            self.logger.debug("Fetching metrics from {:s}".format(url))
             response, content = self.client.request(url, "GET", headers=headers)
         except Exception as error:
-            self.logger.debug("Unable to fetch metrics from {:s} because of error: {:s}".format(url, str(error)))
+            self.logger.debug("Unable to fetch metrics from {:s}".format(url), extra={ "exception": str(error) })
             return False
 
         # Check response code
@@ -51,7 +51,7 @@ class JenkinsApiClient():
         try:
             data = json.loads(content)
         except Exception as error:
-            self.logger.warning("Unable to fetch metrics from {:s} because error while decoding json: {:s}".format(url, str(error)))
+            self.logger.warning("Unable to decode metrics from {:s}".format(url), extra={ "exception": str(error) })
             return False
 
         return { "data": data, "jenkins_version": response["x-jenkins"] }
@@ -149,6 +149,7 @@ if __name__ == '__main__':
     formatter  = jsonlogger.JsonFormatter()
     logHandler.setFormatter(formatter)
     logging.getLogger().addHandler(logHandler)
+    # TODO add timestamp and level to logger output
     # TODO configurabile da fuori
     logging.getLogger().setLevel(logging.DEBUG)
 
