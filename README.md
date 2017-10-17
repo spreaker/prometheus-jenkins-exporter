@@ -16,6 +16,7 @@ The following table shows the supported environment variables:
 | `JENKINS_PASS`       | no       | `""`      | Login password |
 | `METRICS_PREFIX`     | no       | `jenkins` | Exported metrics prefix |
 | `EXPORTER_PORT`      | no       | `8000`    | Exporter listening port |
+| `EXPORTER_LOG_LEVEL` | no       | `INFO`    | Log level. Can ben `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
 
 
 ## Exported metrics
