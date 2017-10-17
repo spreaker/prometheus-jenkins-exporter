@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
   name = 'prometheus-jenkins-exporter',
-  packages = ['prometheus-jenkins-exporter'],
+  packages = ['prometheus_jenkins_exporter'],
   version = '0.1.3',
   description = 'Prometheus exporter for Jenkins',
   author = 'Marco Pracucci',
@@ -14,7 +14,7 @@ setup(
   python_requires = '>=3',
   entry_points={
     'console_scripts': [
-        'jenkins-exporter=prometheus-jenkins-exporter.exporter:main',
+        'jenkins-exporter=prometheus_jenkins_exporter.exporter:main',
     ]
   }
 )
