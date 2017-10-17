@@ -38,6 +38,6 @@ jenkins_plugins_enabled_with_update_count
 `pycodestyle --max-line-length=180 prometheus-jenkins-exporter/__init__.py`
 
 
-## License
+## License
 
 This software is released under the [MIT license](LICENSE.txt).
