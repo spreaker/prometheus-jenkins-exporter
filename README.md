@@ -1,11 +1,20 @@
 # Prometheus exporter for Jenkins
 
 
+## How to install
+
+The following will install the exporter whose entrypoint binary is called `jenkins-exporter`:
+
+```
+pip3 install prometheus-jenkins-exporter
+```
+
+
 ## How to run it
 
 The exporter accepts configuration via environment variables. Ie.
 
-`JENKINS_URL="https://my-jenkins.com" python exporter.py`
+`JENKINS_URL="https://my-jenkins.com" jenkins-exporter`
 
 The following table shows the supported environment variables:
 
