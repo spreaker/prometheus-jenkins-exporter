@@ -38,19 +38,19 @@ class JenkinsApiClient():
             response, content = self.client.request(url, "GET", headers=headers)
         except Exception as error:
             self.logger.debug(f"Unable to fetch metrics from {url}", extra={"exception": str(error)})
-            return False
+            return {}
 
         # Check response code
         if response.status != 200:
             self.logger.debug(f"Unable to fetch metrics from {url} because response status code is {response.status}")
-            return False
+            return {}
 
         # Decode json
         try:
             data = json.loads(content)
         except Exception as error:
             self.logger.warning(f"Unable to decode metrics from {url}", extra={"exception": str(error)})
-            return False
+            return {}
 
         return {"data": data, "jenkins_version": response["x-jenkins"]}
 
