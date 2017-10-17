@@ -16,6 +16,7 @@ The following table shows the supported environment variables:
 | `JENKINS_PASS`       | no       | `""`      | Login password |
 | `METRICS_PREFIX`     | no       | `jenkins` | Exported metrics prefix |
 | `EXPORTER_PORT`      | no       | `8000`    | Exporter listening port |
+| `EXPORTER_LOG_LEVEL` | no       | `INFO`    | Log level. Can ben `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
 
 
 ## Exported metrics
@@ -28,6 +29,13 @@ jenkins_queue_oldest_job_since_seconds
 jenkins_plugins_enabled_count
 jenkins_plugins_enabled_with_update_count
 ```
+
+
+## Contributions
+
+### Ensure the code is PEP 8 compliant
+
+`pycodestyle --max-line-length=180 exporter.py`
 
 
 ## License
