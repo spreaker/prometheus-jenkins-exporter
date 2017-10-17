@@ -44,7 +44,7 @@ jenkins_plugins_enabled_with_update_count
 
 ### Ensure the code is PEP 8 compliant
 
-`pycodestyle --max-line-length=180 prometheus-jenkins-exporter/__init__.py`
+`pycodestyle --max-line-length=180 prometheus_jenkins_exporter/exporter.py`
 
 
 ## License
