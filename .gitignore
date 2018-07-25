@@ -1,3 +1,4 @@
 dist
 MANIFEST
 prometheus_jenkins_exporter.egg-info
+__pycache__/

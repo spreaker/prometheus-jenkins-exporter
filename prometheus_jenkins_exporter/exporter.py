@@ -4,11 +4,16 @@ import json
 import time
 import os
 import signal
+import faulthandler
 from urllib.parse import urlencode, quote_plus
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY
 import logging
 from pythonjsonlogger import jsonlogger
+
+
+# Enable dumps on stderr in case of segfault
+faulthandler.enable()
 
 
 class JenkinsApiClient():

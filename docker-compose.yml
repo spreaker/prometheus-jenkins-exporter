@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  dev:
+    build:
+      context:    .
+      dockerfile: Dockerfile
+    command: [ "sh" ]
+    ports:
+      - 8000:8000
+    volumes:
+      - /workspace/prometheus-jenkins-exporter:/workspace/prometheus-jenkins-exporter:delegated
