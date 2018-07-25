@@ -42,6 +42,12 @@ jenkins_plugins_enabled_with_update_count
 
 ## Contributions
 
+### Run the development environment
+
+```
+docker-compose build && docker-compose run dev sh
+```
+
 ### Ensure the code is PEP 8 compliant
 
 `pycodestyle --max-line-length=180 prometheus_jenkins_exporter/*.py`
