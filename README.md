@@ -53,6 +53,13 @@ docker-compose build && docker-compose run dev sh
 `pycodestyle --max-line-length=180 prometheus_jenkins_exporter/*.py`
 
 
+### How to publish a new version
+
+1. [Release new version on GitHub](https://github.com/spreaker/prometheus-jenkins-exporter/releases)
+2. Update version in `setup.py`
+3. Run `python3 setup.py sdist upload -r pypi`
+
+
 ## License
 
 This software is released under the [MIT license](LICENSE.txt).
