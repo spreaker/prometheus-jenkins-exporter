@@ -5,6 +5,7 @@ import time
 import os
 import signal
 import faulthandler
+from threading import Lock
 from urllib.parse import urlencode, quote_plus
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, REGISTRY
@@ -20,6 +21,7 @@ class JenkinsApiClient():
     def __init__(self, config):
         self.config = config
         self.client = Http(cache=None, timeout=5)
+        self.clientLock = Lock()
         self.logger = logging.getLogger()
 
         # Generate auth digest
@@ -40,7 +42,16 @@ class JenkinsApiClient():
 
         try:
             self.logger.debug(f"Fetching metrics from {url}")
-            response, content = self.client.request(url, "GET", headers=headers)
+
+            # Wrap the HTTP client access with an exclusive lock
+            # because the library is not thread safe
+            if not self.clientLock.acquire(timeout=30):
+                raise Exception("Unable to get lock on HTTP client")
+
+            try:
+                response, content = self.client.request(url, "GET", headers=headers)
+            finally:
+                self.clientLock.release()
         except Exception as error:
             self.logger.debug(f"Unable to fetch metrics from {url}", extra={"exception": str(error)})
             return {}
