@@ -37,6 +37,7 @@ jenkins_up
 jenkins_queue_oldest_job_since_seconds
 jenkins_plugins_enabled_count
 jenkins_plugins_enabled_with_update_count
+jenkins_slave_up
 ```
 
 
