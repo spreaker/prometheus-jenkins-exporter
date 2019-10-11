@@ -79,7 +79,8 @@ class JenkinsMetricsCollector():
     def collect(self):
         metrics = self.get_jenkins_metrics()
 
-        for name, metric in metrics.items():
+        for metric in metrics:
+            name = metric["name"]
             value = metric["value"]
             labels = metric["labels"] if "labels" in metric else {}
 
@@ -88,16 +89,20 @@ class JenkinsMetricsCollector():
             yield gauge
 
     def get_jenkins_metrics(self):
-        metrics = {}
-        metrics.update(self.get_jenkins_status_metrics())
-        metrics.update(self.get_jenkins_queue_metrics())
-        metrics.update(self.get_jenkins_plugins_metrics())
+        metrics = []
+        metrics.extend(self.get_jenkins_status_metrics())
+        metrics.extend(self.get_jenkins_queue_metrics())
+        metrics.extend(self.get_jenkins_plugins_metrics())
+
+        for slave in self._get_slaves():
+            metrics.extend(self.get_jenkins_slave_metrics(slave))
 
         # Add prefix to all metrics
-        renamed = {}
+        renamed = []
 
-        for key, value in metrics.items():
-            renamed[self.config["metrics_prefix"] + "_" + key] = value
+        for metric in metrics:
+            metric["name"] = self.config["metrics_prefix"] + "_" + metric["name"]
+            renamed.append(metric)
 
         return renamed
 
@@ -106,23 +111,58 @@ class JenkinsMetricsCollector():
         response = self.client.request("/queue")
 
         if response:
-            return {"up": {"value": 1, "labels": {"version": response["jenkins_version"]}}}
+            return [{"name": "up", "value": 1, "labels": {"version": response["jenkins_version"]}}]
         else:
-            return {"up": {"value": 0, "labels": {"version": ""}}}
+            return [{"name": "up", "value": 0, "labels": {"version": ""}}]
+
+    def _get_slaves(self):
+        # Fetch data from API
+        response = self.client.request("/computer")
+
+        if not response:
+            return []
+
+        # Get all slaves
+        slaves = []
+        for slave in response["data"]["computer"]:
+            if slave["_class"] == "hudson.slaves.SlaveComputer":
+                slaves.append(slave)
+
+        return slaves
+
+    def get_jenkins_slave_metrics(self, slave):
+        # Get slave status
+        status = 0
+        if slave["offline"] or slave["temporarilyOffline"]:
+            status = 0
+        else:
+            status = 1
+
+        metrics = [
+                {
+                "name": "slave_up",
+                "value": status,
+                "labels": {"display_name": slave['displayName']}
+            }
+        ]
+
+        return metrics
 
     def get_jenkins_queue_metrics(self):
         # Fetch data from API
         response = self.client.request("/queue")
         if not response:
-            return {}
+            return []
 
-        metrics = {"queue_oldest_job_since_seconds": {"value": 0}}
+        metrics = [
+            {"name": "queue_oldest_job_since_seconds", "value": 0}
+        ]
 
         # Get the oldest job in queue
         if len(response["data"]["items"]) > 0:
             oldest = min([item["inQueueSince"] for item in response["data"]["items"]], default=0)
             if oldest > 0:
-                metrics["queue_oldest_job_since_seconds"]["value"] = time.time() - (oldest / 1000)
+                metrics[0]["queue_oldest_job_since_seconds"]["value"] = time.time() - (oldest / 1000)
 
         return metrics
 
@@ -130,19 +170,26 @@ class JenkinsMetricsCollector():
         # Fetch data from API
         response = self.client.request("/pluginManager", {"tree": "plugins[shortName,version,enabled,hasUpdate]"})
         if not response:
-            return {}
+            return []
 
-        metrics = {
-            "plugins_enabled_count":             {"value": 0},
-            "plugins_enabled_with_update_count": {"value": 0}
-        }
+        plugins_enabled_count = 0
+        plugins_enabled_with_update_count = 0
 
         # Count metrics
         for plugin in response["data"]["plugins"]:
-            metrics["plugins_enabled_count"]["value"] += 1 if plugin["enabled"] else 0
-            metrics["plugins_enabled_with_update_count"]["value"] += 1 if plugin["enabled"] and plugin["hasUpdate"] else 0
+            plugins_enabled_count += 1 if plugin["enabled"] else 0
+            plugins_enabled_with_update_count += 1 if plugin["enabled"] and plugin["hasUpdate"] else 0
 
-        return metrics
+        return [
+            {
+                "name": "plugins_enabled_count",
+                "value": plugins_enabled_count,
+            },
+            {
+                "name": "plugins_enabled_with_update_count",
+                "value": plugins_enabled_with_update_count,
+            }
+        ]
 
 
 class SignalHandler():
