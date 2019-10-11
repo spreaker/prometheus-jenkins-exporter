@@ -58,7 +58,9 @@ docker-compose build && docker-compose run dev sh
 
 1. [Release new version on GitHub](https://github.com/spreaker/prometheus-jenkins-exporter/releases)
 2. Update version in `setup.py`
-3. Run `python3 setup.py sdist upload -r pypi`
+3. Run `python3 setup.py sdist`
+4. Upload it with `twine upload dist/*`
+5. Upload the files to the Github release
 
 
 ## License
