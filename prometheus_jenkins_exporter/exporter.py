@@ -144,7 +144,7 @@ class JenkinsMetricsCollector():
                 {
                 "name": "slave_up",
                 "value": status,
-                "labels": {"displayName": slave['displayName']}
+                "labels": {"display_name": slave['displayName']}
             }
         ]
 
