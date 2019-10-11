@@ -101,8 +101,6 @@ class JenkinsMetricsCollector():
         renamed = []
 
         for metric in metrics:
-            if not metric:
-                continue
             metric["name"] = self.config["metrics_prefix"] + "_" + metric["name"]
             renamed.append(metric)
 
