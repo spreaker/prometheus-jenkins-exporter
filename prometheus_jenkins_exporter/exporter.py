@@ -139,7 +139,7 @@ class JenkinsMetricsCollector():
             status = 1
 
         metrics = [
-                {
+            {
                 "name": "slave_up",
                 "value": status,
                 "labels": {"display_name": slave['displayName']}
@@ -162,7 +162,7 @@ class JenkinsMetricsCollector():
         if len(response["data"]["items"]) > 0:
             oldest = min([item["inQueueSince"] for item in response["data"]["items"]], default=0)
             if oldest > 0:
-                metrics[0]["queue_oldest_job_since_seconds"]["value"] = time.time() - (oldest / 1000)
+                metrics[0]["value"] = time.time() - (oldest / 1000)
 
         return metrics
 
