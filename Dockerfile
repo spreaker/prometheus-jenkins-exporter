@@ -1,7 +1,7 @@
 FROM alpine:3.11
 
 # Installing required packages
-RUN apk add --update --no-cache \
+RUN apk add --upgrade --no-cache \
     python3
 
 # Install dependencies
