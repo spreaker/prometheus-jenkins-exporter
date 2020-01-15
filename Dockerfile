@@ -4,8 +4,8 @@ FROM alpine:3.11
 RUN apk add --upgrade --no-cache \
     python3
 
-# Install dependencies
-COPY requirements.txt /workspace/prometheus-jenkins-exporter/requirements.txt
-RUN cd /workspace/prometheus-jenkins-exporter && pip3 install -r requirements.txt
-
 WORKDIR /workspace/prometheus-jenkins-exporter
+
+# Install dependencies
+COPY requirements.txt ./requirements.txt
+RUN pip3 install -r requirements.txt
