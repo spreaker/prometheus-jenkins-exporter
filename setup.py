@@ -12,7 +12,7 @@ setup(
   keywords = ['prometheus', 'jenkins'],
   classifiers = [],
   python_requires = '>=3',
-  install_requires=['httplib2==0.10.3', 'prometheus_client==0.0.21', 'python-json-logger==0.1.5'],
+  install_requires=['httplib2==0.18.0', 'prometheus_client==0.0.21', 'python-json-logger==0.1.5'],
   entry_points={
     'console_scripts': [
         'jenkins-exporter=prometheus_jenkins_exporter.exporter:main',
